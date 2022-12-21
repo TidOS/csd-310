@@ -1,0 +1,16 @@
+{
+    "USER": {
+        "name": "jordan",
+        "id": "1",
+        "LINK_USER_ROLE": {
+            "id": "1",
+            "ROLE": {
+                "id": "1",
+                "LINK_ROLE_PERMISSION": {
+                   "PERMISSION": "edit"
+               }
+            }
+        }
+    }
+    
+}

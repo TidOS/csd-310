@@ -1,0 +1,25 @@
+{
+    "ISBN": "978-1-56619-909-4",
+    "name": "Sample",
+    "price": "0",
+
+    "publisher": {
+        "code": "1",
+        "name": "PublishCo",
+        "address": "123 Fake Street"
+    },
+    "authors": {
+        "author1": {
+            "first_name": "Bob",
+            "last_name": "Bobson",
+            "phone": "555-555-5555",
+            "email": "bob@bobson.co"
+        },
+        "author2": {
+            "first_name": "Jim",
+            "last_name": "Jimson",
+            "phone": "555-555-5552",
+            "email": "jim@jimson.co"  
+        }
+    }
+}
