@@ -35,4 +35,4 @@ print("-- INSERT STATEMENTS --")
 for i in students:
     returnedID = col.insert_one(i).inserted_id
     print("Inserted student record " + i["first_name"] + " " + i["last_name"] + 
-    "into the students collection with document_id " + str(returnedID))
+    " into the students collection with document_id " + str(returnedID))
