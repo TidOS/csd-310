@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Jordan Thomas
+# Jan 15, 2023
+# CYBR-410-T301
+
 from pymongo import MongoClient
 
 # connect to mongodb using our URL from Atlas
