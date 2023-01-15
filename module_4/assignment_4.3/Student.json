@@ -1,0 +1,47 @@
+{
+    "student_id": "1",
+    "first_name": "Jordan",
+    "last_name": "Thomas",
+    "enrollments":[
+        {
+            "term": "Winter",
+            "gpa": "0",
+            "start_date": "1-1-2023",
+            "end_date": "6-1-2023",
+            "courses": [
+                {
+                    "course_id": "CYBR1",
+                    "description": "Computers class",
+                    "instructor": "Steven Jobs",
+                    "grade": "F"
+                },
+                {
+                    "course_id": "CYBR2",
+                    "description": "Internet class",
+                    "instructor": "Al Gore",
+                    "grade": "D"
+                }
+            ]
+        },
+        {
+            "term": "Summer",
+            "gpa": "0",
+            "start_date": "6-1-2023",
+            "end_date": "9-1-2023",
+            "courses": [
+                {
+                    "course_id": "ENG1",
+                    "description": "Writing class",
+                    "instructor": "Bill Shakespeare",
+                    "grade": "C"
+                },
+                {
+                    "course_id": "MATH4",
+                    "description": "Number class",
+                    "instructor": "Craig Guy",
+                    "grade": "D"
+                }
+            ] 
+        }
+    ]
+}
