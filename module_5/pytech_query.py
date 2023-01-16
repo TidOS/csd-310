@@ -11,6 +11,17 @@ client = MongoClient(url)
 db = client.pytech
 col = db["students"]
 
+# get all Student documents and print them
+returnedStudents = col.find({})
+print("-- DISPLAYING STUDENTS FROM find() QUERY --")
+for i in returnedStudents:
+    print("Student ID: " + i["student_id"])
+    print("First Name: " + i["first_name"])
+    print("Last Name:  " + i["last_name"])
+    print()
+
+
+# get 1 instance of students with ids 1007, 1008, 1009 and print them
 returnedStudents = {}
 ids = range(1007,1010)
 def query(id):
@@ -19,7 +30,7 @@ def query(id):
 for i in ids:
     returnedStudents[i] = query(str(i))
 
-print("-- DISPLAYING STUDENTS FROM find() QUERY --")
+print("-- DISPLAYING STUDENTS FROM find_one() QUERY --")
 for i in returnedStudents:   
     # print(returnedStudents[i]) 
     print("Student ID: " + returnedStudents[i]["student_id"])

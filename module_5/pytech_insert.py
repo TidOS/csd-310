@@ -11,7 +11,6 @@ client = MongoClient(url)
 # db is the database within MongoDB we want to connect to
 db = client.pytech
 col = db["students"]
-
 # define our students and put them in an array 
 student1007 = {
     "student_id": "1007",
