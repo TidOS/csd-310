@@ -10,3 +10,44 @@ client = MongoClient(url)
 # db is the database within MongoDB we want to connect to
 db = client.pytech
 col = db["students"]
+
+def printAll():   
+    '''prints all students in the collection'''
+    returnedStudents = col.find({})
+    print("-- DISPLAYING STUDENTS DOCUMENTS FROM find() QUERY --")
+    for i in returnedStudents:
+        print("Student ID: " + i["student_id"])
+        print("First Name: " + i["first_name"])
+        print("Last Name:  " + i["last_name"])
+        print()
+
+# print all students using find()
+printAll()
+
+# create a student to insert
+student1010 = {
+    "student_id": "1010",
+    "first_name": "Donald",
+    "last_name": "Trump"
+}
+
+# insert student1010 and print it alongside its document_id
+print("-- INSERT STATEMENTS --")
+returnedID = col.insert_one(student1010).inserted_id
+print("Inserted student record into the students collection with document_id " 
++ str(returnedID))
+
+
+# search for the test student and print out its information
+print("-- DISPLAYING STUDENT DOCUMENT 1010 TEST DOC -- ")
+returnedStudent = col.find_one({"student_id": "1010"})
+print("Student ID: " + returnedStudent["student_id"])
+print("First Name: " + returnedStudent["first_name"])
+print("Last Name:  " + returnedStudent["last_name"])
+print()
+
+# delete student 1010
+col.delete_one({"student_id": "1010"})
+
+# reprint all students to see if the test student was deleted
+printAll()
