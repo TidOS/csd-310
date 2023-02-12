@@ -24,7 +24,7 @@ try:
     #last name, and team name
     cursor.execute("SELECT player_id, first_name, last_name, team_name from player "+
     "inner join team on player.team_id = team.team_id")
-    # teams is an array of objects with the fields we selected
+    # players is an array of objects with the fields we selected
     players = cursor.fetchall()
     print("-- DISPLAYING PLAYER RECORDS --")
     for player in players:
