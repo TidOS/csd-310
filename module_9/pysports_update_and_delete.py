@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# join tables to show team names for players in database
+# insert a row, update it, and delete it
 # jordan thomas
 # Feb 12 2023
 # CYBR410
@@ -15,10 +15,7 @@ config = {
     "raise_on_warnings": True
 }
 
-try:
-    db = mysql.connector.connect(**config)
-    # start
-    cursor = db.cursor()
+def printPlayers():
     #run a query that joins the player table (left) with the team table (right) 
     #where the team_id matches from each table.  We want the player id, first name,
     #last name, and team name
@@ -33,6 +30,25 @@ try:
         print("Last Name: {}".format(player[2]))
         print("Team Name: {}".format(player[3]))
         print()
+
+try:
+    db = mysql.connector.connect(**config)
+    # start
+    cursor = db.cursor()
+    #insert a new player on team gandalf (team_id = 1 for gandalf)
+    cursor.execute("INSERT INTO player (first_name, last_name, team_id) VALUES('Smeagol', 'Shire Folk', 1)")
+    print("-- ADDED A PLAYER --")
+    printPlayers()
+
+    #SQL query to change team_id to 2, name to Gollum Ring Stealer of the player we just added
+    cursor.execute("UPDATE player SET team_id = 2, first_name = 'Gollum', last_name = 'Ring Stealer' WHERE first_name = 'Smeagol'")
+    print("-- UPDATED A PLAYER --")
+    printPlayers()
+
+    #SQL query to delete the Gollum player
+    cursor.execute("DELETE from player WHERE first_name = 'Gollum'")
+    print("-- DELETED THE PLAYER --")
+    printPlayers()
 
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
