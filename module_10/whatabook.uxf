@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.0.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>490</x>
+      <y>160</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>book
+--
+book_id: INT AUTO_INCREMENT -- primary
+book_name: VARCHAR(500)
+author: VARCHAR(500)
+summary:  VARCHAR(500) -- ok to be NULL
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>50</x>
+      <y>420</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>user
+--
+user_id: INT AUTO_INCREMENT -- primary
+first_name: VARCHAR(500)
+last_name: INT
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>490</x>
+      <y>420</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>wishlist
+--
+wishlist_id: INT AUTO_INCREMENT -- primary
+user_id: INT -- fk from user.user_id
+book_id: INT -- fk from book.book_id
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>170</y>
+      <w>310</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>store
+--
+store_id: INT AUTO_INCREMENT -- primary
+loc: VARCHAR(500)
+open_hour: INT
+close_hour:  INT</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>350</x>
+      <y>480</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&gt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;140.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>640</x>
+      <y>310</y>
+      <w>30</w>
+      <h>130</h>
+    </coordinates>
+    <panel_attributes>lt=-&lt;</panel_attributes>
+    <additional_attributes>10.0;110.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>230</y>
+      <w>170</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&gt;-</panel_attributes>
+    <additional_attributes>150.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
