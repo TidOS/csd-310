@@ -34,17 +34,86 @@ else:
     UNDERLINE = '\033[4m'
     RESETCOLOR = '\033[0m'
 
-def readConfig(filename):
-    config = configparser.ConfigParser()
-    config.read(filename)
-    print(config.sections())
+# todo - read config from file
+# def readConfig(filename):
+#     config = configparser.ConfigParser()
+#     config.read(filename)
+#     print(config.sections())
 
-readConfig("db.cfg")
+# readConfig("db.cfg")
+
+
 
 config = {
-    "user": "pysports_user",
+    "user": "whatabook_user",
     "password": "MySQL8IsGreat!",
-    "host": "localhost",
-    "database": "pysports",
+    "host": "web",
+    "database": "whatabook",
     "raise_on_warnings": True
 }
+
+
+def printError(message):
+    print(RED + message + RESETCOLOR)
+
+def showMainMenu():
+    print(BOLD + INVERT + GREEN + "--    MAIN MENU    --" + RESETCOLOR)
+    print("[1]:  View Books")
+    print("[2]:  View Store Locations")
+    print("[3]:  Manage Account")
+    print("[4]:  Quit")
+
+
+def printBooks():
+    cursor.execute("SELECT * FROM book")
+    books = cursor.fetchall()
+    print(RESETCOLOR)
+    for book in books:
+        # print(book)
+        print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+        print(BOLD + "Book #: "  + RESETCOLOR + GREEN + str(book[0]) + RESETCOLOR)
+        print(BOLD + "Book Name: " + RESETCOLOR + book[1])
+        print(BOLD + "Author: " + RESETCOLOR + book[2])
+        # Summary may or may not exist for a given book, so we can catch a TypeError 
+        # if we try to concatenate to a NoneType
+        try:
+            print(BOLD + "Details: " + RESETCOLOR + book[3])
+        except TypeError:
+            print(BOLD + "Details: " + RESETCOLOR + RED + "none available" + RESETCOLOR)
+    print(INVERT + BOLD + "___________________________________________________" + RESETCOLOR)
+
+def printLocations()
+    cursor.execute("SELECT * FROM store")
+
+
+try:
+    db = mysql.connector.connect(**config)
+    # start
+    cursor = db.cursor()
+    choice = 0
+    while choice != 4:
+        showMainMenu()
+        try:
+            choice = int(input(BOLD + "ENTER CHOICE: " + RESETCOLOR + GREEN ))  
+            if choice > 4 or choice < 1:
+                raise ValueError
+            elif choice == 1:
+                printBooks()
+                input(BOLD + "Press enter to continue: <ENTER>" + RESETCOLOR)
+            print(RESETCOLOR) 
+        except ValueError:
+            printError("Please enter a number between 1 and 4")
+            
+
+except mysql.connector.Error as err:
+    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+        print("  The supplied username or password are invalid")
+
+    elif err.errno == errorcode.ER_BAD_DB_ERROR:
+        print("  The specified database does not exist")
+
+    else:
+        print(err)
+
+finally:
+    db.close()
