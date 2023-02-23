@@ -82,7 +82,7 @@ def printBooks():
             print(BOLD + "Details: " + RESETCOLOR + RED + "none available" + RESETCOLOR)
     print(INVERT + BOLD + "___________________________________________________" + RESETCOLOR)
 
-def printLocations()
+def printLocations():
     cursor.execute("SELECT * FROM store")
 
 
