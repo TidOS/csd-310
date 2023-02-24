@@ -59,6 +59,9 @@ def printError(message):
     print(RED + message + RESETCOLOR)
 
 def debug(message):
+    ''''prints debug messages in YELLOW
+    If ENABLECOLOR is not set, still print the message,
+    but YELLOW will be defined to be an empty string'''
     print(YELLOW + message + RESETCOLOR)
 
 def showMainMenu():
@@ -75,9 +78,6 @@ def showMainMenu():
 def printBooks():
     ''''print all books in the whatabook.book table'''
     cursor.execute("SELECT * FROM book")
-    # fields in book (in order)
-    # book_id, book_name, author, summary
-    # summary can be null or empty but the rest cannot.
     books = cursor.fetchall()
     print(RESETCOLOR + BOLD + INVERT + GREEN + "--    DISPLAYING BOOK LISTING    --" + RESETCOLOR)
     for book in books:
@@ -86,6 +86,9 @@ def printBooks():
 
 def printBookSingle(book):
     '''prints a book, if no summary is available it is noted in yellow text that it is unavailable'''
+    # a book should have 4 entries (in order)
+    # book_id, book_name, author, summary
+    # summary can be null or empty but the rest cannot.
     print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     print(BOLD + "Book #: "  + RESETCOLOR + GREEN + str(book[0]) + RESETCOLOR)
     print(BOLD + "Book Name: " + RESETCOLOR + book[1])
@@ -139,8 +142,50 @@ def showWishlist(customer):
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    WISHLIST LISTING    --" + RESETCOLOR)
     print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+    if DEBUGMODE:
+        debug("SQL QUERY: SELECT user.user_id, user.first_name, user.last_name, book.book_id, book.book_name, book.author, book.summary " + 
+        "FROM wishlist " + 
+        "INNER JOIN user ON wishlist.user_id = user.user_id " + 
+        "INNER JOIN book ON wishlist.book_id = book.book_id " + 
+        "WHERE user.user_id = " +str(customer))
+    cursor.execute("SELECT user.user_id, user.first_name, user.last_name, book.book_id, book.book_name, book.author, book.summary " + 
+    "FROM wishlist " + 
+    "INNER JOIN user ON wishlist.user_id = user.user_id " + 
+    "INNER JOIN book ON wishlist.book_id = book.book_id " + 
+    "WHERE user.user_id = " +str(customer))
+    wishlist = cursor.fetchall()
+    # wishlist should be a list with all our user's wishlist items and user info
+    for i in wishlist:
+        book = (i[3], i[4], i[5], i[6])
+        printBookSingle(book)
+    print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
 
+def showAvailableBooks(customer):
+    ''''prints a list of books not currently in the user's wishlist
+    Then allows user to add a book by its id
+    This function returns a list of book_ids that are available to the user
+    '''
+    print(RESETCOLOR)
+    print(BOLD + INVERT + GREEN + "--    AVAILABLE BOOK LISTING    --" + RESETCOLOR)
+    print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+    cursor.execute("SELECT book_id, book_name, author, summary FROM book "+ 
+    "WHERE book_id NOT IN (SELECT book_id FROM wishlist WHERE user_id = " + str(customer)+")")
+    books = cursor.fetchall()
+    bookindexes = []
+    for book in books:
+        bookindexes.append(book[0])
+        #book = (i[0], i[1], i[2], i[3])
+        printBookSingle(book)
+    return bookindexes
 
+def addBookToWishlist(customer, book_id):
+    '''Insert a book_id into a customer's wish list given the customer id and book_id
+    Error checking on these numbers should have been done in the main program logic'''
+    if DEBUGMODE:
+        debug("inserting into wishlist -> " + str(customer) + " " + str(book_id) )
+        debug("SQL COMMAND: " + "INSERT INTO wishlist(user_id, book_id) VALUES("+ str(customer) + ", " + str(book_id) + ")")
+    cursor.execute("INSERT INTO wishlist(user_id, book_id) VALUES("+ str(customer) + ", " + str(book_id) + ");")
+    db.commit()
 try:
     db = mysql.connector.connect(**config)
     # start
@@ -163,10 +208,10 @@ try:
                 input(BOLD + "Press enter to continue: <ENTER>" + RESETCOLOR)
             elif choice == 3:
                 # 3 = Manage Account
-                doneUser = False
                 validUser = False
                 account_action = 0
-                while not doneUser:
+                goback = "n"
+                while goback.lower() != "y":
                     while not validUser:
                         customer = validateUser()
                         if customer:
@@ -174,24 +219,48 @@ try:
                         else:
                             quitFromNoUserID = input(BOLD + "Quit Program? <Y/N> " + RESETCOLOR)
                             if  quitFromNoUserID.lower() == "y":
+                                db.close()
                                 sys.exit(1)
                     # If we get here, we should have a valid customer id in customer
                     printAccountMainMenu()
                     try:
                         account_action = int(input(BOLD + "ENTER CHOICE: " + RESETCOLOR + GREEN))
-                        while account_action != 3:
+                        while goback.lower() != "y":
                             if account_action == 1:
                                 showWishlist(customer)
+                                #goback = input(BOLD + "GO BACK? <Y/N>: " + RESETCOLOR + GREEN)
+                                break
                             elif account_action == 2:
-                                addBookMenu(customer)
-                            account_action = int(input(BOLD + "ENTER CHOICE: " + RESETCOLOR + GREEN))
+                                bookadded = False
+                                while not bookadded:
+                                    bookindexes = showAvailableBooks(customer)
+                                    #bookindexes is a list of book ids that are not in the wishlist for the customer
+                                    try:
+                                        indextoadd = int(input(RESETCOLOR + BOLD + "Enter the ID # of the book you wish to add: <#> " + RESETCOLOR))
+                                        if DEBUGMODE:
+                                            debug("is index to add in available books?  " + str(indextoadd in bookindexes))
+                                        if indextoadd not in bookindexes:
+                                            printError("The book was not available to add to the wishlist")
+                                            printError("Please re-review the available options and choose again: ")
+                                            input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
+                                        else:
+                                            bookadded = True
+                                    except ValueError:
+                                        printError("Enter a number.")
+                                        printError("Please re-review the available options and choose again: ")
+                                        input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
+                                    
+                                    # if we get here, we should have the id of the book to id and the customer id in "customer"
+                                addBookToWishlist(customer, indextoadd)
+                                #goback = input(BOLD + "GO BACK? <Y/N>: " + RESETCOLOR + GREEN)
+                                break
+                            elif account_action == 3:
+                                goback = "y"
                     except ValueError:
-                        printError("Enter a number dingus")
                         input("press enter to continue <ENTER>")
-
-                
-                
-
+            elif choice == 4:
+                db.close()
+                sys.exit(0)
             print(RESETCOLOR) 
         except ValueError:
             printError("Please enter a number between 1 and 4")
@@ -200,12 +269,9 @@ try:
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         printError("  The supplied username or password are invalid")
-
     elif err.errno == errorcode.ER_BAD_DB_ERROR:
         printError("  The specified database does not exist")
-
     else:
         printError(err)
-
 finally:
     db.close()
