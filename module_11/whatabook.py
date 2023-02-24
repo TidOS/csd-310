@@ -168,6 +168,9 @@ def showAvailableBooks(customer):
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    AVAILABLE BOOK LISTING    --" + RESETCOLOR)
     print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+    if DEBUGMODE:
+        debug("QUERY:  SELECT book_id, book_name, author, summary FROM book "+ 
+        "WHERE book_id NOT IN (SELECT book_id FROM wishlist WHERE user_id = " + str(customer)+")")
     cursor.execute("SELECT book_id, book_name, author, summary FROM book "+ 
     "WHERE book_id NOT IN (SELECT book_id FROM wishlist WHERE user_id = " + str(customer)+")")
     books = cursor.fetchall()
