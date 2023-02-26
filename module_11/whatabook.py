@@ -1,17 +1,44 @@
 #!/usr/bin/env python3
 # WhatABook main application
+# Jordan Thomas, 2023
+# CYBR410-T301
+''''
+This is an application that interfaces with a fictional book store WhatABook's database
+Users will be able to view a list of books available at the store
+Users will be able to view store locations
+Users will be able to add books to a wishlist
+Users will be authenticated by knowing their user id (this is a known weakness in WhatABook's security)
+'''
 
-
-import os  # to enable color mode on windows consoles
-import sys # to quit more eloquently
+import os        # to enable color mode on windows consoles
+import sys       # to quit more eloquently
 import platform  # for detection of OS to enable color on windows
-#import configparser # for reading configuration file
 import mysql.connector
 from mysql.connector import errorcode
 
-DEBUGMODE = True    # print additional messages during runtime
+
+##################################################
+#                                                #
+#          CONFIGURATION SETTINGS                #
+#                                                #
+################################################## 
+DEBUGMODE = False    # print additional messages during runtime
 ENABLECOLOR = True  # use colors in the terminal emulator
-# define colors used in printing messages
+
+config = {
+    "user": "whatabook_user",
+    "password": "MySQL8IsGreat!",
+    "host": "web",
+    "database": "whatabook",
+    "raise_on_warnings": True
+}
+
+
+##################################################
+#                                                #
+#               COLOR DEFINITIONS                #
+#                                                #
+################################################## 
 if not ENABLECOLOR:
     CYAN = ''
     GREEN = ''
@@ -35,38 +62,35 @@ else:
     UNDERLINE = '\033[4m'
     RESETCOLOR = '\033[0m'
 
-# todo - read config from file
-# def readConfig(filename):
-#     config = configparser.ConfigParser()
-#     config.read(filename)
-#     print(config.sections())
 
-# readConfig("db.cfg")
-
-config = {
-    "user": "whatabook_user",
-    "password": "MySQL8IsGreat!",
-    "host": "web",
-    "database": "whatabook",
-    "raise_on_warnings": True
-}
-
+##################################################
+#                                                #
+#            FUNCTION DEFINITIONS                #
+#                                                #
+################################################## 
+def clear():
+    '''clears the screen so it's easier to read the program'''
+    if platform.system() == "Windows":
+        os.system("cls")
+    else:
+        os.system("clear")
 
 def printError(message):
-    ''''prints error message in red.  
+    '''prints error message in red.  
     If ENABLECOLOR is not set, still print the message, 
     but RED will be defined to be an empty string'''
     print(RED + message + RESETCOLOR)
 
 def debug(message):
-    ''''prints debug messages in YELLOW
+    '''prints debug messages in YELLOW
     If ENABLECOLOR is not set, still print the message,
     but YELLOW will be defined to be an empty string'''
     print(YELLOW + message + RESETCOLOR)
 
 def showMainMenu():
-    ''''Print the main menu, logic is done in main()'''
-    debug("Main Menu called.")
+    '''Print the main menu, logic is done in main()'''
+    if DEBUGMODE:
+        debug("Main Menu called.")
     print(BOLD + INVERT + GREEN + "--    MAIN MENU    --" + RESETCOLOR)
     print("[1]:  View Books")
     print("[2]:  View Store Locations")
@@ -85,10 +109,11 @@ def printBooks():
     print(GREEN + BOLD + "___________________________________________________\n\n" + RESETCOLOR)
 
 def printBookSingle(book):
-    '''prints a book, if no summary is available it is noted in yellow text that it is unavailable'''
-    # a book should have 4 entries (in order)
-    # book_id, book_name, author, summary
-    # summary can be null or empty but the rest cannot.
+    '''prints a book, if no summary is available it is noted in yellow text that it is unavailable
+    a book should have 4 entries (in order)
+    book_id, book_name, author, summary
+    summary can be null or empty but the rest cannot.
+    '''
     print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     print(BOLD + "Book #: "  + RESETCOLOR + GREEN + str(book[0]) + RESETCOLOR)
     print(BOLD + "Book Name: " + RESETCOLOR + book[1])
@@ -98,7 +123,8 @@ def printBookSingle(book):
     try:
         print(BOLD + "Details: " + RESETCOLOR + book[3])
     except TypeError:
-        debug("A book with no summary was found in printBookSingle().")
+        if DEBUGMODE:
+            debug("A book with no summary was found in printBookSingle().")
         print(BOLD + "Details: " + RESETCOLOR + YELLOW + "none available" + RESETCOLOR)
 
 def printLocations():
@@ -126,13 +152,16 @@ def validateUser():
         customer = cursor.fetchone()
         if DEBUGMODE:
             debug("Customer found: {}\nName: {} {}".format(str(customer[0]),customer[1],customer[2]))
-        return customer[0]
+        "" + str(customer[0])
+        return customer
     except ValueError:
-        debug("A number was not entered.")
+        if DEBUGMODE:
+            debug("A number was not entered.")
         printError("Enter a numerical customer ID.")
         return False
     except TypeError:
-        debug("A number was found but a matching user was not.")
+        if DEBUGMODE:
+            debug("A number was found but a matching user was not.")
         printError("Sorry, your customer ID was not found.")
         return False
 
@@ -141,7 +170,7 @@ def showWishlist(customer):
     the input customer is the id number of the customer'''
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    WISHLIST LISTING    --" + RESETCOLOR)
-    print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+    #print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     if DEBUGMODE:
         debug("SQL QUERY: SELECT user.user_id, user.first_name, user.last_name, book.book_id, book.book_name, book.author, book.summary " + 
         "FROM wishlist " + 
@@ -167,7 +196,7 @@ def showAvailableBooks(customer):
     '''
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    AVAILABLE BOOK LISTING    --" + RESETCOLOR)
-    print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
+    #print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     if DEBUGMODE:
         debug("QUERY:  SELECT book_id, book_name, author, summary FROM book "+ 
         "WHERE book_id NOT IN (SELECT book_id FROM wishlist WHERE user_id = " + str(customer)+")")
@@ -179,6 +208,7 @@ def showAvailableBooks(customer):
         bookindexes.append(book[0])
         #book = (i[0], i[1], i[2], i[3])
         printBookSingle(book)
+    print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     return bookindexes
 
 def addBookToWishlist(customer, book_id):
@@ -189,12 +219,20 @@ def addBookToWishlist(customer, book_id):
         debug("SQL COMMAND: " + "INSERT INTO wishlist(user_id, book_id) VALUES("+ str(customer) + ", " + str(book_id) + ")")
     cursor.execute("INSERT INTO wishlist(user_id, book_id) VALUES("+ str(customer) + ", " + str(book_id) + ");")
     db.commit()
+
+
+##################################################
+#                                                #
+#          MAIN PROGRAM STARTS HERE              #
+#                                                #
+##################################################    
 try:
     db = mysql.connector.connect(**config)
     # start
     cursor = db.cursor()
     choice = 0
     while choice != 4:
+        clear()
     # Begin main program logic
         showMainMenu()
         try:
@@ -205,76 +243,106 @@ try:
                 # 1 = View Books
                 printBooks()
                 input(BOLD + "Press enter to continue: <ENTER>" + RESETCOLOR)
+                clear()
             elif choice == 2:
                 # 2 = View Store Locations
+                clear()
                 printLocations()
                 input(BOLD + "Press enter to continue: <ENTER>" + RESETCOLOR)
+                clear()
             elif choice == 3:
                 # 3 = Manage Account
                 validUser = False
                 account_action = 0
                 goback = "n"
+                customer = False
                 while goback.lower() != "y":
                     while not validUser:
-                        customer = validateUser()
+                        customerInfo = validateUser()
+                        if customerInfo != False:
+                            customer = customerInfo[0]
                         if customer:
                             validUser = True
+                            clear()
+                            print(BOLD + GREEN + "Welcome, {} {}".format(customerInfo[1], customerInfo[2]))
                         else:
                             quitFromNoUserID = input(BOLD + "Quit Program? <Y/N> " + RESETCOLOR)
                             if  quitFromNoUserID.lower() == "y":
                                 db.close()
                                 sys.exit(1)
-                    # If we get here, we should have a valid customer id in customer
+                    # If we get here, we should have a valid customer id stored in customer
                     printAccountMainMenu()
                     try:
                         account_action = int(input(BOLD + "ENTER CHOICE: " + RESETCOLOR + GREEN))
                         while goback.lower() != "y":
                             if account_action == 1:
+                                # 1: show wish list
+                                clear()
                                 showWishlist(customer)
-                                #goback = input(BOLD + "GO BACK? <Y/N>: " + RESETCOLOR + GREEN)
+                                input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
+                                clear()
                                 break
                             elif account_action == 2:
+                                # 2: add book to wish list
                                 bookadded = False
                                 while not bookadded:
+                                    clear()
                                     bookindexes = showAvailableBooks(customer)
                                     #bookindexes is a list of book ids that are not in the wishlist for the customer
                                     try:
-                                        indextoadd = int(input(RESETCOLOR + BOLD + "Enter the ID # of the book you wish to add: <#> " + RESETCOLOR))
+                                        indextoadd = int(input(RESETCOLOR + BOLD + "Enter the ID # of the book you wish to add, 0 to cancel: <#> " + RESETCOLOR))
                                         if DEBUGMODE:
                                             debug("is index to add in available books?  " + str(indextoadd in bookindexes))
+                                        if indextoadd == 0:
+                                            bookadded = True
+                                            break
                                         if indextoadd not in bookindexes:
                                             printError("The book was not available to add to the wishlist")
                                             printError("Please re-review the available options and choose again: ")
                                             input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
+                                            clear()
                                         else:
                                             bookadded = True
                                     except ValueError:
                                         printError("Enter a number.")
                                         printError("Please re-review the available options and choose again: ")
                                         input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
+                                        clear()
                                     
-                                    # if we get here, we should have the id of the book to id and the customer id in "customer"
-                                addBookToWishlist(customer, indextoadd)
-                                #goback = input(BOLD + "GO BACK? <Y/N>: " + RESETCOLOR + GREEN)
+                                # if we get here, we should have the id of the book to id and the customer id in "customer"
+                                if indextoadd != 0:
+                                    addBookToWishlist(customer, indextoadd)
+                                clear()
                                 break
                             elif account_action == 3:
+                                # 3: go back
+                                clear()
                                 goback = "y"
+                            else: 
+                                raise ValueError
                     except ValueError:
-                        input("press enter to continue <ENTER>")
+                        printError("Please enter a number matching a choice above.")
+                        input("press enter to continue <ENTER> " + RESETCOLOR)
+                        clear()
             elif choice == 4:
                 db.close()
                 sys.exit(0)
             print(RESETCOLOR) 
         except ValueError:
             printError("Please enter a number between 1 and 4")
-            
+            input(BOLD + "Press enter to continue <ENTER> " + RESETCOLOR)
 
+            
+# error handling for mysql connection
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         printError("  The supplied username or password are invalid")
+        sys.exit(1)
     elif err.errno == errorcode.ER_BAD_DB_ERROR:
         printError("  The specified database does not exist")
+        sys.exit(1)
     else:
         printError(err)
+        sys.exit(1)
 finally:
     db.close()
