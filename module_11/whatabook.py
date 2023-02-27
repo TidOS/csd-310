@@ -141,11 +141,17 @@ def printLocations():
 def printAccountMainMenu():
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    ACCOUNT MANAGEMENT    --" + RESETCOLOR)
-    print("[1]: Wishlist")
-    print("[2]: Add Book")   
+    print("[1]: View Wishlist")
+    print("[2]: Add Book to Wishlist")   
     print("[3]: Return to Main Menu")
 
 def validateUser():
+    '''
+    Returns the customer id of a valid customer.  If the customer ID entered is not valid
+    return False.  Main program logic should use a try-catch for a ValueError.  If a 
+    number is returned, the account is valid and no error will raise.  Else, False will
+    be returned and an error will raise and this function can be called again.
+    '''
     try:
         uid = int(input(RESETCOLOR + BOLD + "Enter your customer ID: " + RESETCOLOR))
         cursor.execute("SELECT * FROM user WHERE user_id = " + str(uid))
@@ -170,13 +176,13 @@ def showWishlist(customer):
     the input customer is the id number of the customer'''
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    WISHLIST LISTING    --" + RESETCOLOR)
-    #print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     if DEBUGMODE:
         debug("SQL QUERY: SELECT user.user_id, user.first_name, user.last_name, book.book_id, book.book_name, book.author, book.summary " + 
         "FROM wishlist " + 
         "INNER JOIN user ON wishlist.user_id = user.user_id " + 
         "INNER JOIN book ON wishlist.book_id = book.book_id " + 
         "WHERE user.user_id = " +str(customer))
+    # this query joins the tables so we can print the info from the books inside the wishlist associated with our user
     cursor.execute("SELECT user.user_id, user.first_name, user.last_name, book.book_id, book.book_name, book.author, book.summary " + 
     "FROM wishlist " + 
     "INNER JOIN user ON wishlist.user_id = user.user_id " + 
@@ -196,7 +202,6 @@ def showAvailableBooks(customer):
     '''
     print(RESETCOLOR)
     print(BOLD + INVERT + GREEN + "--    AVAILABLE BOOK LISTING    --" + RESETCOLOR)
-    #print( GREEN + BOLD + "___________________________________________________" + RESETCOLOR)
     if DEBUGMODE:
         debug("QUERY:  SELECT book_id, book_name, author, summary FROM book "+ 
         "WHERE book_id NOT IN (SELECT book_id FROM wishlist WHERE user_id = " + str(customer)+")")
@@ -336,13 +341,12 @@ try:
 # error handling for mysql connection
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        printError("  The supplied username or password are invalid")
+        printError("** The supplied username or password are invalid: {}".format(err))
         sys.exit(1)
     elif err.errno == errorcode.ER_BAD_DB_ERROR:
-        printError("  The specified database does not exist")
+        printError("** The specified database does not exist: {}".format(err))
         sys.exit(1)
     else:
-        printError(err)
+        printError("** An error occurred connecting to the database: {}".format(err))
         sys.exit(1)
-finally:
-    db.close()
+db.close()
